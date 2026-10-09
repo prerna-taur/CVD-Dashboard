@@ -1,147 +1,161 @@
+
+import streamlit as st
+import pandas as pd
 import joblib
 
-import subprocess
-import sys
-
-subprocess.check_call([sys.executable, "-m", "pip", "install", "joblib"])
-
-import joblib
-
-# -----------------------------
-# Load Model
-# -----------------------------
+# ----------------------------------
+# Load trained model and scaler
+# ----------------------------------
 model = joblib.load("best_cvd_model.pkl")
 scaler = joblib.load("scaler.pkl")
 
-# -----------------------------
-# Page Configuration
-# -----------------------------
+# ----------------------------------
+# Page configuration
+# ----------------------------------
 st.set_page_config(
-    page_title="CVD Prediction Dashboard",
+    page_title="CardioCare Dashboard",
     page_icon="❤️",
     layout="wide"
 )
 
-# -----------------------------
-# Custom CSS
-# -----------------------------
+# ----------------------------------
+# Custom styling
+# ----------------------------------
 st.markdown("""
 <style>
-
-.main {
-    background-color: #f7f9fc;
+.stApp {
+    background-color: #f4f7fb;
 }
 
-.title {
-    font-size: 42px;
-    font-weight: 700;
-    text-align: center;
-    margin-bottom: 5px;
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
 }
 
-.subtitle {
-    text-align: center;
-    color: #6b7280;
-    font-size: 18px;
-    margin-bottom: 30px;
+h1 {
+    color: #17365d;
+    font-weight: 800;
 }
 
-.card {
-    padding: 22px;
-    border-radius: 15px;
+h2, h3 {
+    color: #24476b;
+}
+
+div[data-testid="stMetric"] {
     background-color: white;
-    box-shadow: 0px 4px 15px rgba(0,0,0,0.08);
-    margin-bottom: 20px;
+    padding: 18px;
+    border-radius: 12px;
+    border: 1px solid #e1e8f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.result {
-    padding: 25px;
-    border-radius: 15px;
-    text-align: center;
-    background-color: white;
-    box-shadow: 0px 4px 15px rgba(0,0,0,0.08);
+.stButton > button {
+    background-color: #d62839;
+    color: white;
+    border-radius: 10px;
+    border: none;
+    height: 48px;
+    font-weight: bold;
 }
 
-.footer {
-    text-align: center;
-    color: #777;
-    margin-top: 30px;
-    font-size: 14px;
+.stButton > button:hover {
+    background-color: #a91d2b;
+    color: white;
 }
-
 </style>
 """, unsafe_allow_html=True)
 
-# -----------------------------
+# ----------------------------------
 # Header
-# -----------------------------
+# ----------------------------------
+st.title("❤️ CardioCare")
 st.markdown(
-    '<div class="title">❤️ Cardiovascular Disease Prediction</div>',
-    unsafe_allow_html=True
+    "**CARDIOVASCULAR DISEASE PREDICTION DASHBOARD**"
+)
+st.write(
+    "An educational machine-learning dashboard using a "
+    "Random Forest model."
 )
 
-st.markdown(
-    '<div class="subtitle">Machine Learning Dashboard • Random Forest Model</div>',
-    unsafe_allow_html=True
-)
+st.divider()
 
-# -----------------------------
-# Sidebar
-# -----------------------------
-st.sidebar.title("👤 Patient Information")
-st.sidebar.markdown("Enter the patient details below.")
+# ----------------------------------
+# Sidebar: Patient inputs
+# ----------------------------------
+st.sidebar.title("👤 Patient Details")
+st.sidebar.caption("Enter the available dataset values.")
 
 age = st.sidebar.number_input(
-    "Age", 1, 120, 50
+    "Age", min_value=1, max_value=120, value=50
 )
 
 gender = st.sidebar.selectbox(
-    "Gender", [0, 1]
+    "Gender (dataset code)", [0, 1]
 )
 
 chestpain = st.sidebar.number_input(
-    "Chest Pain", 0, 3, 1
+    "Chest Pain (code)", min_value=0, max_value=3, value=1
 )
 
 restingBP = st.sidebar.number_input(
-    "Resting Blood Pressure", 0, 250, 120
+    "Resting Blood Pressure",
+    min_value=0, max_value=250, value=120
 )
 
 serumcholestrol = st.sidebar.number_input(
-    "Serum Cholesterol", 0, 600, 200
+    "Serum Cholesterol",
+    min_value=0, max_value=600, value=200
 )
 
 fastingbloodsugar = st.sidebar.selectbox(
-    "Fasting Blood Sugar", [0, 1]
+    "Fasting Blood Sugar (code)", [0, 1]
 )
 
 restingrelectro = st.sidebar.number_input(
-    "Resting ECG", 0, 2, 0
+    "Resting ECG (code)", min_value=0, max_value=2, value=0
 )
 
 maxheartrate = st.sidebar.number_input(
-    "Maximum Heart Rate", 50, 250, 150
+    "Maximum Heart Rate",
+    min_value=50, max_value=250, value=150
 )
 
 exerciseangia = st.sidebar.selectbox(
-    "Exercise Angina", [0, 1]
+    "Exercise Angina (code)", [0, 1]
 )
 
 oldpeak = st.sidebar.number_input(
-    "Oldpeak", 0.0, 10.0, 1.0
+    "Oldpeak", min_value=0.0, max_value=10.0, value=1.0
 )
 
 slope = st.sidebar.number_input(
-    "Slope", 0, 2, 1
+    "Slope (code)", min_value=0, max_value=2, value=1
 )
 
 noofmajorvessels = st.sidebar.number_input(
-    "Number of Major Vessels", 0, 3, 0
+    "Number of Major Vessels",
+    min_value=0, max_value=3, value=0
 )
 
-# -----------------------------
-# Input Data
-# -----------------------------
+# ----------------------------------
+# Patient overview
+# ----------------------------------
+st.subheader("📋 Patient Overview")
+
+col1, col2, col3, col4 = st.columns(4)
+
+col1.metric("Age", f"{age} years")
+col2.metric("Blood Pressure", restingBP)
+col3.metric("Cholesterol", serumcholestrol)
+col4.metric("Maximum Heart Rate", maxheartrate)
+
+st.divider()
+
+# ----------------------------------
+# Prepare model input
+# Keep the same feature order used
+# during model training
+# ----------------------------------
 input_data = pd.DataFrame({
     "age": [age],
     "gender": [gender],
@@ -157,92 +171,93 @@ input_data = pd.DataFrame({
     "noofmajorvessels": [noofmajorvessels]
 })
 
-# -----------------------------
-# Patient Summary
-# -----------------------------
-st.markdown('<div class="card">', unsafe_allow_html=True)
-
-st.subheader("📋 Patient Information")
-
-col1, col2, col3, col4 = st.columns(4)
-
-col1.metric("Age", age)
-col2.metric("Blood Pressure", restingBP)
-col3.metric("Cholesterol", serumcholestrol)
-col4.metric("Max Heart Rate", maxheartrate)
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# -----------------------------
-# Prediction
-# -----------------------------
-st.markdown('<div class="card">', unsafe_allow_html=True)
-
+# ----------------------------------
+# Prediction section
+# ----------------------------------
 st.subheader("🔍 CVD Prediction")
 
 if st.button("❤️ Predict CVD", use_container_width=True):
 
-    scaled_data = scaler.transform(input_data)
+    try:
+        scaled_data = scaler.transform(input_data)
 
-    prediction = model.predict(scaled_data)[0]
-    probability = model.predict_proba(scaled_data)[0]
+        prediction = model.predict(scaled_data)[0]
+        probabilities = model.predict_proba(scaled_data)[0]
 
-    cvd_probability = probability[1] * 100
+        # Assumes model class 1 represents CVD.
+        # Locate the probability using the trained class labels.
+        classes = list(model.classes_)
+        cvd_index = classes.index(1)
+        no_cvd_index = classes.index(0)
 
-    st.markdown('<div class="result">', unsafe_allow_html=True)
+        cvd_probability = probabilities[cvd_index] * 100
+        no_cvd_probability = probabilities[no_cvd_index] * 100
 
-    if prediction == 1:
-        st.error("⚠️ CVD Predicted")
-    else:
-        st.success("✅ No CVD Predicted")
+        left, right = st.columns(2)
 
-    st.metric(
-        "CVD Probability",
-        f"{cvd_probability:.2f}%"
-    )
+        with left:
+            st.markdown("### Model Result")
 
-    st.progress(float(probability[1]))
+            if prediction == 1:
+                st.error("⚠️ CVD predicted by the model")
+            else:
+                st.success("✅ No CVD predicted by the model")
 
-    # Probability chart
-    chart_data = pd.DataFrame({
-        "Result": ["No CVD", "CVD"],
-        "Probability": [
-            probability[0] * 100,
-            probability[1] * 100
-        ]
-    })
+            st.metric(
+                "Model-estimated CVD probability",
+                f"{cvd_probability:.2f}%"
+            )
 
-    st.bar_chart(
-        chart_data.set_index("Result")
-    )
+        with right:
+            st.markdown("### Probability Distribution")
 
-    st.markdown('</div>', unsafe_allow_html=True)
+            chart_data = pd.DataFrame({
+                "Outcome": ["No CVD", "CVD"],
+                "Probability (%)": [
+                    no_cvd_probability,
+                    cvd_probability
+                ]
+            })
 
-st.markdown('</div>', unsafe_allow_html=True)
+            st.bar_chart(
+                chart_data.set_index("Outcome")
+            )
 
-# -----------------------------
-# Model Performance
-# -----------------------------
-st.markdown('<div class="card">', unsafe_allow_html=True)
+    except Exception as error:
+        st.error(f"Prediction error: {error}")
+        st.info(
+            "Check that the model, scaler, and input features "
+            "match the training notebook."
+        )
 
+st.divider()
+
+# ----------------------------------
+# Model performance
+# ----------------------------------
 st.subheader("🤖 Model Performance")
 
-col1, col2, col3, col4 = st.columns(4)
+m1, m2, m3, m4 = st.columns(4)
 
-col1.metric("Model", "Random Forest")
-col2.metric("Accuracy", "98.50%")
-col3.metric("F1 Score", "98.71%")
-col4.metric("ROC-AUC", "99.90%")
+m1.metric("Algorithm", "Random Forest")
+m2.metric("Accuracy", "98.50%")
+m3.metric("F1 Score", "98.71%")
+m4.metric("ROC-AUC", "99.90%")
 
-st.markdown('</div>', unsafe_allow_html=True)
-
-# -----------------------------
-# Footer
-# -----------------------------
-st.markdown(
-    '<div class="footer">'
-    '⚕️ This dashboard is for educational and demonstration purposes only. '
-    'It is not a medical diagnosis.'
-    '</div>',
-    unsafe_allow_html=True
+st.caption(
+    "Performance figures reported by the training notebook; "
+    "they are not evidence of clinical effectiveness."
 )
+
+# ----------------------------------
+# Medical disclaimer
+# ----------------------------------
+st.warning(
+    "Educational demonstration only. This model is not a "
+    "medical diagnostic tool. Its predictions must not be used "
+    "to make medical decisions or replace advice from a qualified "
+    "healthcare professional."
+)
+
+st.markdown("---")
+st.caption("❤️ CardioCare | Machine Learning Project")

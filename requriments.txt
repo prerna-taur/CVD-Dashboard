@@ -1,6 +1,4 @@
-Streamlit
+streamlit
 pandas
-numpy
+joblib
 scikit-learn
-plotly
-joblib==1.4.2
